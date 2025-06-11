@@ -1,4 +1,5 @@
 [workspace]
 members = [
-    "02/guessing_game"
-, "03/testproject", "03/variables"]
+    "02/guessing_game", "03/branches", "03/functions",
+    "03/variables",
+]
