@@ -1,3 +1,4 @@
+use std::convert::TryInto;
 
 fn main() {
 
@@ -74,6 +75,9 @@ fn main() {
         println!("fib_iter({i}): {}", fib_iter(i));
     }
     println!();
+
+    let s = "abbcccddddeeeeeffffffggggggghhhhhhhhiiiiiiiii";
+    println!("{} -> {}", s, rle(s.to_string()));
 }
 
 fn fib(n: i32) -> i32 {
@@ -96,3 +100,69 @@ fn fib_iter(n: i32) -> i32 {
 
     return c
 }
+
+fn rle(s: String) -> String {
+    let chars: Vec<char> = s.chars().collect();
+    let mut v: Vec<char> = Vec::new();
+    let mut i = 0;
+
+    while i < chars.len() {
+        v.push(chars[i]);
+        let l = i;
+        let mut r = i + 1;
+        while r < chars.len() && chars[r - 1] == chars[r] {
+            r += 1;
+        }
+        let run = char::from_digit((r - l).try_into().unwrap(), 10).unwrap();
+        v.push(run);
+        i = r;
+    }
+
+    let s1: String = v.into_iter().collect();
+    return s1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
