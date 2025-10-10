@@ -1,5 +1,5 @@
 [workspace]
 members = [
     "02/guessing_game", "03/branches", "03/functions",
-    "03/variables",
+    "03/variables", "04/ownership", "05/structs",
 ]
