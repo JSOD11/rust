@@ -132,14 +132,18 @@ impl HashMap {
         for key in self.present_keys.clone() {
             print!(" {:#?}", key);
         }
-        println!(" }}, size = {:#?}, capacity = {:#?}", self.num_present_keys(), self.num_buckets());
+        println!(
+            " }}, size = {:#?}, capacity = {:#?}",
+            self.num_present_keys(),
+            self.num_buckets()
+        );
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use rand::Rng;
     use super::*;
+    use rand::Rng;
 
     const STARTING_BUCKETS: u64 = 10;
 
@@ -157,6 +161,15 @@ mod tests {
         hm.put(17, 4);
         assert_eq!(hm.num_present_keys(), 8);
         hm
+    }
+
+    fn insert_n_random_pairs(hm: &mut HashMap, num_pairs: u64, range:u64) {
+        for _ in 0..num_pairs {
+            hm.put(
+                rand::rng().random_range(1..=range),
+                rand::rng().random_range(1..=range),
+            );
+        }
     }
 
     #[test]
@@ -197,12 +210,7 @@ mod tests {
         let mut hm = hm_init();
         assert_eq!(hm.num_present_keys(), 8);
 
-        for _ in 0..STARTING_BUCKETS {
-            hm.put(
-                rand::rng().random_range(1..=100),
-                rand::rng().random_range(1..=100),
-            );
-        }
+        insert_n_random_pairs(&mut hm, 10, 100);
 
         if hm.num_present_keys() > STARTING_BUCKETS {
             assert_eq!(
@@ -211,5 +219,13 @@ mod tests {
                 "number of buckets should double after we reach 1 key per bucket on average"
             );
         }
+    }
+
+    #[test]
+    fn test_larger_volume() {
+        // TODO: See if we can set a default argument for HashMap number of buckets somehow.
+        let mut hm = HashMap::new(STARTING_BUCKETS);
+        insert_n_random_pairs(&mut hm, 1000, 10000);
+        // hm.print();
     }
 }
