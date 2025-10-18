@@ -1,7 +1,5 @@
 use std::collections::HashSet;
 
-const STARTING_BUCKETS: usize = 5;
-
 #[derive(Debug)]
 struct HashMap {
     buckets: Vec<Vec<Node>>,
@@ -22,18 +20,27 @@ struct Node {
 
 #[allow(dead_code)]
 impl HashMap {
-    pub fn new() -> Self {
+    pub fn new(num_buckets: u64) -> Self {
         let mut hm = HashMap {
             buckets: Vec::new(),
             present_keys: HashSet::new(),
         };
-
-        for _ in 0..STARTING_BUCKETS {
-            let v = Vec::new();
-            hm.buckets.push(v);
-        }
-
+        hm.push_buckets(num_buckets);
         hm
+    }
+
+    fn push_buckets(&mut self, n: u64) {
+        for _ in 0..n {
+            self.buckets.push(Vec::new());
+        }
+    }
+
+    pub fn num_buckets(&self) -> u64 {
+        self.buckets.len() as u64
+    }
+
+    pub fn num_present_keys(&self) -> u64 {
+        self.present_keys.len() as u64
     }
 
     pub fn put(&mut self, key: u64, val: u64) {
@@ -55,12 +62,12 @@ impl HashMap {
             bucket.push(Node::new(key, val));
             self.present_keys.insert(key);
         }
+
+        self.double_table();
     }
 
     pub fn get(&self, key: u64) -> Option<u64> {
-        // print!("GET: {:#?} -> ", key);
         if !self.present_keys.contains(&key) {
-            // println!("not found");
             return None;
         }
 
@@ -72,14 +79,13 @@ impl HashMap {
         for i in 0..bucket.len() {
             let node = bucket.get(i).expect("node must not be empty");
             if node.key == key {
-                // println!("{:#?}", node.val);
                 return Some(node.val);
             }
         }
         None
     }
 
-    pub fn remove(&mut self, key: u64) {
+    pub fn remove(&mut self, key: u64) -> Option<u64> {
         let bucket_index: usize = key as usize % self.buckets.len();
         let bucket = self
             .buckets
@@ -87,17 +93,32 @@ impl HashMap {
             .expect("bucket must not be empty");
         for i in 0..bucket.len() {
             let node = bucket.get(i).expect("node must not be empty");
-            if node.key == key {
+            let k = node.key;
+            let v = node.val;
+            if k == key {
                 bucket.swap_remove(i);
-                self.present_keys.remove(&key);
-                return;
+                self.present_keys.remove(&k);
+                return Some(v);
             }
+        }
+        None
+    }
+
+    pub fn double_table(&mut self) {
+        if self.num_present_keys() >= self.num_buckets() {
+            let mut doubled_hm = HashMap::new(2 * self.num_buckets());
+            for bucket in &self.buckets {
+                for node in bucket {
+                    doubled_hm.put(node.key, node.val);
+                }
+            }
+            self.buckets = doubled_hm.buckets;
         }
     }
 
     pub fn print(&self) {
         print!("\nHashMap {{\n\n");
-        for i in 0..self.buckets.len() {
+        for i in 0..self.num_buckets() as usize {
             let bucket = self.buckets.get(i).expect("bucket should exist");
             print!("    [");
             for j in 0..bucket.len() {
@@ -111,16 +132,20 @@ impl HashMap {
         for key in self.present_keys.clone() {
             print!(" {:#?}", key);
         }
-        println!(" }}, size = {:#?}", self.present_keys.len());
+        println!(" }}, size = {:#?}, capacity = {:#?}", self.num_present_keys(), self.num_buckets());
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use rand::Rng;
     use super::*;
 
+    const STARTING_BUCKETS: u64 = 10;
+
     fn hm_init() -> HashMap {
-        let mut hm = HashMap::new();
+        let mut hm = HashMap::new(STARTING_BUCKETS);
+        assert_eq!(hm.num_buckets(), STARTING_BUCKETS);
         hm.put(5, 5);
         hm.put(2, 10);
         hm.put(8, 13);
@@ -130,6 +155,7 @@ mod tests {
         hm.put(12, 14);
         hm.put(18, 1);
         hm.put(17, 4);
+        assert_eq!(hm.num_present_keys(), 8);
         hm
     }
 
@@ -151,11 +177,39 @@ mod tests {
         let mut hm = hm_init();
         assert_eq!(hm.get(12), Some(14));
         assert_eq!(hm.get(18), Some(1));
+        assert_eq!(hm.num_present_keys(), 8);
+        hm.print();
         hm.remove(12);
         hm.remove(18);
         hm.remove(100);
+        hm.print();
+        assert_eq!(
+            hm.num_present_keys(),
+            6,
+            "testing number of keys present after remove()"
+        );
         assert_eq!(hm.get(12), None);
         assert_eq!(hm.get(18), None);
     }
-}
 
+    #[test]
+    fn test_bucket_doubling() {
+        let mut hm = hm_init();
+        assert_eq!(hm.num_present_keys(), 8);
+
+        for _ in 0..STARTING_BUCKETS {
+            hm.put(
+                rand::rng().random_range(1..=100),
+                rand::rng().random_range(1..=100),
+            );
+        }
+
+        if hm.num_present_keys() > STARTING_BUCKETS {
+            assert_eq!(
+                hm.num_buckets(),
+                STARTING_BUCKETS * 2,
+                "number of buckets should double after we reach 1 key per bucket on average"
+            );
+        }
+    }
+}
