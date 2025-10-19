@@ -116,24 +116,27 @@ impl HashMap {
         }
     }
 
-    pub fn print(&self) {
-        print!("\nHashMap {{\n\n");
-        for i in 0..self.num_buckets() as usize {
-            let bucket = self.buckets.get(i).expect("bucket should exist");
-            print!("    [");
-            for j in 0..bucket.len() {
-                let node = bucket.get(j).expect("node should exist");
-                print!(" ({:#?}, {:#?})", node.key, node.val);
+    pub fn print(&self, verbose: bool) {
+        if verbose {
+            print!("\nHashMap {{\n\n");
+            for i in 0..self.num_buckets() as usize {
+                let bucket = self.buckets.get(i).expect("bucket should exist");
+                print!("    [");
+                for j in 0..bucket.len() {
+                    let node = bucket.get(j).expect("node should exist");
+                    print!(" ({:#?}, {:#?})", node.key, node.val);
+                }
+                println!(" ]");
             }
-            println!(" ]");
-        }
-        print!("\n}}\n");
-        print!("Present keys: {{");
-        for key in self.present_keys.clone() {
-            print!(" {:#?}", key);
+            print!("\n}}\n");
+            print!("Present keys: {{");
+            for key in self.present_keys.clone() {
+                print!(" {:#?}", key);
+            }
+            println!(" }}");
         }
         println!(
-            " }}, size = {:#?}, capacity = {:#?}",
+            "size = {:#?}, capacity = {:#?}",
             self.num_present_keys(),
             self.num_buckets()
         );
@@ -163,7 +166,7 @@ mod tests {
         hm
     }
 
-    fn insert_n_random_pairs(hm: &mut HashMap, num_pairs: u64, range:u64) {
+    fn insert_n_random_pairs(hm: &mut HashMap, num_pairs: u64, range: u64) {
         for _ in 0..num_pairs {
             hm.put(
                 rand::rng().random_range(1..=range),
@@ -191,11 +194,11 @@ mod tests {
         assert_eq!(hm.get(12), Some(14));
         assert_eq!(hm.get(18), Some(1));
         assert_eq!(hm.num_present_keys(), 8);
-        hm.print();
+        hm.print(false);
         hm.remove(12);
         hm.remove(18);
         hm.remove(100);
-        hm.print();
+        hm.print(false);
         assert_eq!(
             hm.num_present_keys(),
             6,
@@ -223,9 +226,14 @@ mod tests {
 
     #[test]
     fn test_larger_volume() {
-        // TODO: See if we can set a default argument for HashMap number of buckets somehow.
-        let mut hm = HashMap::new(STARTING_BUCKETS);
+        let mut hm = HashMap::new(1);
         insert_n_random_pairs(&mut hm, 1000, 10000);
-        // hm.print();
+        hm.print(false);
+        assert!(hm.num_buckets() > hm.num_present_keys());
+
+        let mut hm = HashMap::new(1);
+        insert_n_random_pairs(&mut hm, 100000, 100000);
+        hm.print(false);
+        assert!(hm.num_buckets() > hm.num_present_keys());
     }
 }
