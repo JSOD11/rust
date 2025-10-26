@@ -1,11 +1,5 @@
 use std::collections::HashSet;
 
-#[derive(Debug)]
-struct HashMap {
-    buckets: Vec<Vec<Node>>,
-    present_keys: std::collections::HashSet<u64>,
-}
-
 impl Node {
     pub fn new(key: u64, val: u64) -> Self {
         Self { key, val }
@@ -13,9 +7,15 @@ impl Node {
 }
 
 #[derive(Debug)]
+struct HashMap {
+    buckets: Vec<Vec<Node>>,
+    present_keys: std::collections::HashSet<u64>,
+}
+
+#[derive(Debug)]
 struct Node {
-    key: u64,
     val: u64,
+    key: u64,
 }
 
 #[allow(dead_code)]
