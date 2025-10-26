@@ -1,9 +1,9 @@
 use std::collections::HashSet;
 
 #[derive(Debug)]
-struct HashMap {
-    buckets: Vec<Vec<Node>>,
-    present_keys: std::collections::HashSet<u64>,
+struct Node {
+    key: u64,
+    val: u64,
 }
 
 impl Node {
@@ -13,9 +13,9 @@ impl Node {
 }
 
 #[derive(Debug)]
-struct Node {
-    key: u64,
-    val: u64,
+struct HashMap {
+    buckets: Vec<Vec<Node>>,
+    present_keys: std::collections::HashSet<u64>,
 }
 
 #[allow(dead_code)]
