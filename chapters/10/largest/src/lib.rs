@@ -1,14 +1,11 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
-
-pub fn largest<T: PartialOrd>(a: &[T]) -> &T {
+pub fn largest<T: PartialOrd + std::fmt::Debug>(a: &[T]) -> &T {
     let mut largest_num = &a[0];
     for num in a {
         if num > &largest_num {
             largest_num = num;
         }
     }
+    println!("{:#?}", largest_num);
     largest_num
 }
 
@@ -18,7 +15,8 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let a = &[1, 2, 3, 4, 5];
-        println!("{:#?}", largest(a));
+        assert_eq!(5, *largest(&[1, 2, 3, 4, 5]));
+        assert_eq!(20f64, *largest(&[1f64, 20f64, 3f64, 4f64, 5f64]));
+        assert_eq!('z', *largest(&['a', 'f', 'z', 'g', 'y']));
     }
 }
