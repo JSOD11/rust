@@ -1,4 +1,9 @@
-pub fn largest<T: PartialOrd + std::fmt::Debug>(a: &[T]) -> &T {
+use std::fmt::Debug;
+
+pub fn largest<T>(a: &[T]) -> &T
+where
+    T: PartialOrd + Debug,
+{
     let mut largest_num = &a[0];
     for num in a {
         if num > &largest_num {
