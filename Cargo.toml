@@ -1,5 +1,5 @@
 [workspace]
 members = [
     "chapters/02/guessing_game", "chapters/03/branches", "chapters/03/functions",
-    "chapters/03/variables", "chapters/04/ownership", "chapters/05/structs", "chapters/10/largest", "projects/hashmap", "rustlings",
+    "chapters/03/variables", "chapters/04/ownership", "chapters/05/structs", "chapters/10/largest", "projects/hashmap", "projects/minigrep", "rustlings",
 ]
