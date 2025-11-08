@@ -1,8 +1,12 @@
-use std::{error::Error, fs};
+use std::{env, error::Error, fs};
 
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let file_contents = fs::read_to_string(config.file_path)?;
-    let matching_lines = search(&config.query, &file_contents);
+    let matching_lines = if config.ignore_case {
+        case_insensitive_search(&config.query, &file_contents)
+    } else {
+        search(&config.query, &file_contents)
+    };
     println!("{:#?}", matching_lines);
     Ok(())
 }
@@ -10,6 +14,7 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
 pub struct Config {
     query: String,
     file_path: String,
+    ignore_case: bool,
 }
 
 impl Config {
@@ -19,7 +24,12 @@ impl Config {
         }
         let query = args[1].clone();
         let file_path = args[2].clone();
-        Ok(Self { query, file_path })
+        let ignore_case = env::var("IGNORE_CASE").is_ok();
+        Ok(Self {
+            query,
+            file_path,
+            ignore_case,
+        })
     }
 }
 
@@ -27,6 +37,17 @@ pub fn search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
     let mut matching_lines = vec![];
     for line in contents.lines() {
         if line.contains(query) {
+            matching_lines.push(line);
+        }
+    }
+    matching_lines
+}
+
+pub fn case_insensitive_search<'a>(query: &str, contents: &'a str) -> Vec<&'a str> {
+    let lowercase_query = query.to_lowercase();
+    let mut matching_lines = vec![];
+    for line in contents.lines() {
+        if line.to_lowercase().contains(&lowercase_query) {
             matching_lines.push(line);
         }
     }
@@ -83,6 +104,20 @@ To tell your name the livelong day";
                 "How public, like a frog",
                 "To tell your name the livelong day",
                 "To an admiring bog!",
+            ],
+            matching_lines
+        );
+    }
+
+    #[test]
+    fn case_insensitive_the() {
+        let file_contents = fs::read_to_string("poem.txt").unwrap();
+        let matching_lines = case_insensitive_search("tHe", &file_contents);
+        assert_eq!(
+            vec![
+                "Then there's a pair of us - don't tell!",
+                "They'd banish us, you know.",
+                "To tell your name the livelong day"
             ],
             matching_lines
         );
